@@ -41,5 +41,5 @@ Kullanıcıların kas gruplarına göre egzersizleri keşfedebileceği, her egze
 ### 1. Depoyu Klonla
 
 ```bash
-git clone https://github.com/kullanici-adi/egzersiz-rehberi.git
+git clone https://github.com/Iamozgurenes/sports-project.git
 cd egzersiz-rehberi
