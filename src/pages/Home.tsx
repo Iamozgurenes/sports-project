@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import {  useLocation, useSearchParams, Link } from 'react-router-dom';
+import {  useLocation, useSearchParams } from 'react-router-dom';
 import BodyPartFilter from '../components/BodyPartFilter';
 import SearchForm from '../components/SearchForm';
 import { fetchExercisesByBodyPart, fetchAllExercises } from '../api/exerciseApi';
@@ -11,6 +11,7 @@ import HomeCard from '../components/Card';
 import ErrorComp from '../components/Error';
 import NotFoundComp from '../components/NotFound';
 import TitleDesc from '../components/TitleDesc';
+import Pagination from '../components/Pagination';
 
 // Sayfa başına gösterilecek egzersiz sayısı
 const ITEMS_PER_PAGE = 12;
@@ -302,51 +303,23 @@ const Home = () => {
         <NotFoundComp/>
       )}
 
+
+      {/* Card */}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {paginatedExercises?.map((exercise: Exercise) => (
         <HomeCard exercise={exercise}/>
         ))}
       </div>
 
-      {/* Sayfalama Kontrolleri */}
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center space-x-4 mt-12 mb-8">
-          <button
-            onClick={handlePrevPage}
-            disabled={currentPage === 1}
-            className={`px-4 py-2 rounded-lg border text-sm flex items-center gap-2 transition-colors ${
-              currentPage === 1 
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-200'
-            }`}
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Önceki
-          </button>
-          
-          {/* <div className="text-sm font-medium text-gray-700">
-            Sayfa {currentPage} / {totalPages} 
-            <span className="ml-1 text-gray-500">({totalItems} sonuç)</span>
-          </div> */}
-          
-          <button
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
-            className={`px-4 py-2 rounded-lg border text-sm flex items-center gap-2 transition-colors ${
-              currentPage === totalPages 
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-200'
-            }`}
-          >
-            Sonraki
-            <svg className="w-4 h-4" fill="none" viewBox="0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
-      )}
+      {/* Pagination */}
+      <Pagination 
+        currentPage={currentPage}
+        totalPages={totalPages}
+        handlePrevPage={handlePrevPage}
+        handleNextPage={handleNextPage}
+
+      />
 
       {/* Footer */}
       <footer className="mt-16 py-8 border-t border-gray-200">

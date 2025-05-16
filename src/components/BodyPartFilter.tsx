@@ -14,7 +14,7 @@ const BodyPartFilter = ({ onSelect, selectedPart, disabled = false }: BodyPartFi
     queryFn: fetchBodyParts,
   });
 
-  // "All" kategorisini ekleyelim
+  
   const allBodyParts = ['all', ...bodyParts];
 
   if (isLoading) {
