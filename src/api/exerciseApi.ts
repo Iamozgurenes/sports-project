@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://exercisedb.p.rapidapi.com';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const API_HEADERS = {
-  'X-RapidAPI-Key': '96aacc3f77msh31524feef2483edp1b4320jsnf1c51623af03',
-  'X-RapidAPI-Host': 'exercisedb.p.rapidapi.com',
+  'X-RapidAPI-Key': import.meta.env.VITE_API_KEY,
+  'X-RapidAPI-Host': import.meta.env.VITE_API_HOST,
 };
 
 export const fetchBodyParts = async (): Promise<string[]> => {

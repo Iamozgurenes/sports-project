@@ -3,10 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useFavorites } from '../hooks/useFavorites';
 
-const API_BASE_URL = 'https://exercisedb.p.rapidapi.com';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const API_HEADERS = {
-  'X-RapidAPI-Key': '96aacc3f77msh31524feef2483edp1b4320jsnf1c51623af03',
-  'X-RapidAPI-Host': 'exercisedb.p.rapidapi.com',
+  'X-RapidAPI-Key': import.meta.env.VITE_API_KEY,
+  'X-RapidAPI-Host': import.meta.env.VITE_API_HOST,
 };
 
 const fetchExerciseById = async (id: string) => {
@@ -127,7 +127,7 @@ const ExerciseDetail = () => {
                     </svg>
                   </div>
                   <div>
-                    <h2 className="text-sm font-semibold text-green-900 uppercase">EKİPMAN</h2>
+                    <h1 className="text-sm font-semibold text-green-900 uppercase">EKİPMAN</h1>
                     <p className="mt-1 text-lg font-medium text-green-800">{data.equipment}</p>
                   </div>
                 </div>
