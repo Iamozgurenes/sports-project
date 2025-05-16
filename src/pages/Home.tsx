@@ -8,6 +8,9 @@ import { useFavorites } from '../hooks/useFavorites';
 import type { Exercise } from '../types/exercise';
 import SkeletonLoader from '../components/SkeletonLoader';
 
+// Sayfa başına gösterilecek egzersiz sayısı
+const ITEMS_PER_PAGE = 12;
+
 const Home = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -15,17 +18,20 @@ const Home = () => {
   
   const initialPart = searchParams.get('bodyPart') || 'back';
   const initialSearchTerm = searchParams.get('search') || '';
+  const initialPage = parseInt(searchParams.get('page') || '1', 10);
   
   const [selectedPart, setSelectedPart] = useState<string>(initialPart);
   const [searchTerm, setSearchTerm] = useState<string>(initialSearchTerm);
   const [isSearching, setIsSearching] = useState<boolean>(initialSearchTerm.length > 2);
+  const [currentPage, setCurrentPage] = useState<number>(initialPage);
+  const [totalItems, setTotalItems] = useState<number>(0);
   
   const { toggleFavorite, isFavorite } = useFavorites();
   const queryClient = useQueryClient();
   const lastSearchTimeRef = useRef<number>(0);
   const allCachedExercisesRef = useRef<Exercise[]>([]);
 
-  const updateUrlParams = (part: string | null, search: string | null) => {
+  const updateUrlParams = (part: string | null, search: string | null, page: number = 1) => {
     const params = new URLSearchParams();
     
     if (part) {
@@ -36,23 +42,30 @@ const Home = () => {
       params.set('search', search);
     }
     
+    params.set('page', page.toString());
+    
     setSearchParams(params);
   };
 
   useEffect(() => {
     const bodyPart = searchParams.get('bodyPart');
     const search = searchParams.get('search');
+    const page = searchParams.get('page');
     
     if (bodyPart && bodyPart !== selectedPart) {
       setSelectedPart(bodyPart);
+      setCurrentPage(1); // Kategori değiştiyse sayfayı sıfırla
     }
     
     if (search !== searchTerm) {
       setSearchTerm(search || '');
       setIsSearching(search !== null && search.length > 2);
     }
+    
+    if (page) {
+      setCurrentPage(parseInt(page, 10));
+    }
   }, [location.search, searchParams, searchTerm, selectedPart]);
-
 
   const shouldFetchSearch = (): boolean => {
     const now = Date.now();
@@ -73,6 +86,7 @@ const Home = () => {
       allCachedExercisesRef.current = data;
       
       queryClient.setQueryData(['exercises', 'all'], data);
+      setTotalItems(data.length);
       
       return data;
     }
@@ -96,6 +110,7 @@ const Home = () => {
         fetchAndCacheAllExercises().then((data: Exercise[]) => {
           const filteredResults: Exercise[] = filterExercises(data, searchTerm);
           queryClient.setQueryData(['exercises', 'search', selectedPart, searchTerm], filteredResults);
+          setTotalItems(filteredResults.length);
         });
       } 
       // Seçili kategori içinde ara
@@ -109,12 +124,14 @@ const Home = () => {
           // Sonra arama terimine göre filtrele
           const filteredResults = filterExercises(categoryExercises, searchTerm);
           queryClient.setQueryData(['exercises', 'search', selectedPart, searchTerm], filteredResults);
+          setTotalItems(filteredResults.length);
         } 
         // Önbellekte veri yoksa önce categori egzersizlerini getir
         else {
           fetchExercisesByBodyPart(selectedPart).then((data: Exercise[]) => {
             const filteredResults = filterExercises(data, searchTerm);
             queryClient.setQueryData(['exercises', 'search', selectedPart, searchTerm], filteredResults);
+            setTotalItems(filteredResults.length);
           });
         }
       }
@@ -133,11 +150,15 @@ const Home = () => {
         // 'all' kategorisindeyse tüm egzersizlerde ara
         if (selectedPart === 'all') {
           if (allCachedExercisesRef.current.length > 0) {
-            return filterExercises(allCachedExercisesRef.current, searchTerm);
+            const filtered = filterExercises(allCachedExercisesRef.current, searchTerm);
+            setTotalItems(filtered.length);
+            return filtered;
           }
           
           const data: Exercise[] = await fetchAndCacheAllExercises();
-          return filterExercises(data, searchTerm);
+          const filtered = filterExercises(data, searchTerm);
+          setTotalItems(filtered.length);
+          return filtered;
         } 
         // Seçili kategori içinde ara
         else {
@@ -148,22 +169,31 @@ const Home = () => {
               (exercise: Exercise) => exercise.bodyPart.toLowerCase() === selectedPart.toLowerCase()
             );
             // Sonra arama terimine göre filtrele
-            return filterExercises(categoryExercises, searchTerm);
+            const filtered = filterExercises(categoryExercises, searchTerm);
+            setTotalItems(filtered.length);
+            return filtered;
           }
           
           // Kategori verilerini getir ve arama yap
           const categoryData = await fetchExercisesByBodyPart(selectedPart);
-          return filterExercises(categoryData, searchTerm);
+          const filtered = filterExercises(categoryData, searchTerm);
+          setTotalItems(filtered.length);
+          return filtered;
         }
       } else if (selectedPart === 'all') {
         const cachedData = queryClient.getQueryData<Exercise[]>(['exercises', 'all']);
         if (cachedData) {
+          setTotalItems(cachedData.length);
           return cachedData;
         }
         
-        return fetchAndCacheAllExercises();
+        const data = await fetchAndCacheAllExercises();
+        setTotalItems(data.length);
+        return data;
       } else {
-        return fetchExercisesByBodyPart(selectedPart);
+        const data = await fetchExercisesByBodyPart(selectedPart);
+        setTotalItems(data.length);
+        return data;
       }
     },
     enabled: isSearching ? searchTerm.length > 2 : true,
@@ -177,22 +207,54 @@ const Home = () => {
   const handleSearch = (term: string) => {
     setSearchTerm(term);
     setIsSearching(term.length > 2);
-    updateUrlParams(selectedPart, term.length > 2 ? term : null);
+    setCurrentPage(1);
+    updateUrlParams(selectedPart, term.length > 2 ? term : null, 1);
   };
 
   const resetSearch = () => {
     setSearchTerm('');
     setIsSearching(false);
-    updateUrlParams(selectedPart, null);
+    setCurrentPage(1);
+    updateUrlParams(selectedPart, null, 1);
   };
 
   const handleBodyPartSelect = (part: string) => {
+    // Aynı kategori tekrar seçildiğinde bile pagination'ı sıfırla ve URL güncelle
     setSelectedPart(part);
     resetSearch();
-    updateUrlParams(part, null);
+    setCurrentPage(1);
+    updateUrlParams(part, null, 1);
   };
 
-  const filtered = exercises;
+  // Sayfalama için egzersizleri filtreleme
+  const getPaginatedExercises = () => {
+    if (!exercises) return [];
+    
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    
+    return exercises.slice(startIndex, endIndex);
+  };
+
+  const totalPages = Math.ceil((totalItems || 0) / ITEMS_PER_PAGE);
+  
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+      updateUrlParams(selectedPart, isSearching ? searchTerm : null, nextPage);
+    }
+  };
+  
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      const prevPage = currentPage - 1;
+      setCurrentPage(prevPage);
+      updateUrlParams(selectedPart, isSearching ? searchTerm : null, prevPage);
+    }
+  };
+
+  const paginatedExercises = getPaginatedExercises();
 
   return (
     <div className="max-w-7xl px-4 sm:px-6 py-8 mx-auto">
@@ -246,7 +308,7 @@ const Home = () => {
         </div>
       )}
 
-      {!isLoading && filtered && filtered.length === 0 && (
+      {!isLoading && paginatedExercises && paginatedExercises.length === 0 && (
         <div className="p-10 bg-gray-50 border border-gray-100 rounded-xl text-center">
           <div className="inline-flex justify-center items-center w-12 h-12 rounded-full bg-gray-100 text-gray-600 mb-4">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -259,7 +321,7 @@ const Home = () => {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {filtered?.map((exercise: Exercise) => (
+        {paginatedExercises?.map((exercise: Exercise) => (
           <div
             key={exercise.id}
             onClick={() => navigate(`/exercise/${exercise.id}`)}
@@ -276,7 +338,7 @@ const Home = () => {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  toggleFavorite(exercise); // Artık egzersizin sadece ID'sini değil tüm bilgilerini geçiyoruz
+                  toggleFavorite(exercise);
                 }}
                 className="absolute z-20 p-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-lg top-4 right-4 transition-all duration-300 
                   hover:bg-white group-hover:scale-110"
@@ -301,6 +363,46 @@ const Home = () => {
           </div>
         ))}
       </div>
+
+      {/* Sayfalama Kontrolleri */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center space-x-4 mt-12 mb-8">
+          <button
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+            className={`px-4 py-2 rounded-lg border text-sm flex items-center gap-2 transition-colors ${
+              currentPage === 1 
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-200'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Önceki
+          </button>
+          
+          {/* <div className="text-sm font-medium text-gray-700">
+            Sayfa {currentPage} / {totalPages} 
+            <span className="ml-1 text-gray-500">({totalItems} sonuç)</span>
+          </div> */}
+          
+          <button
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 rounded-lg border text-sm flex items-center gap-2 transition-colors ${
+              currentPage === totalPages 
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-200'
+            }`}
+          >
+            Sonraki
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      )}
     </div>
   );
 };
