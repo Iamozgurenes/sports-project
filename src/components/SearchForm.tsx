@@ -8,7 +8,7 @@ interface SearchFormProps {
 const SearchForm = ({ onSearch, initialValue = '' }: SearchFormProps) => {
   const [searchTerm, setSearchTerm] = useState(initialValue);
 
-  // initialValue değiştiğinde state'i güncelle
+  
   useEffect(() => {
     setSearchTerm(initialValue);
   }, [initialValue]);

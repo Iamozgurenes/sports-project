@@ -13,7 +13,6 @@ const Home = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // URL'den parametre değerlerini al veya varsayılan değerleri kullan
   const initialPart = searchParams.get('bodyPart') || 'back';
   const initialSearchTerm = searchParams.get('search') || '';
   
@@ -26,7 +25,6 @@ const Home = () => {
   const lastSearchTimeRef = useRef<number>(0);
   const allCachedExercisesRef = useRef<Exercise[]>([]);
 
-  // URL parametrelerini güncelleyen yardımcı fonksiyon
   const updateUrlParams = (part: string | null, search: string | null) => {
     const params = new URLSearchParams();
     
@@ -41,7 +39,6 @@ const Home = () => {
     setSearchParams(params);
   };
 
-  // URL değişikliklerini izle ve gerekirse state'i güncelle
   useEffect(() => {
     const bodyPart = searchParams.get('bodyPart');
     const search = searchParams.get('search');
@@ -56,12 +53,12 @@ const Home = () => {
     }
   }, [location.search, searchParams, searchTerm, selectedPart]);
 
-  // Son bir saat içinde herhangi bir arama yapıldı mı kontrolü
+
   const shouldFetchSearch = (): boolean => {
     const now = Date.now();
     const oneHour = 60 * 60 * 1000; // 1 saat (ms)
     
-    // Eğer son aramadan bu yana 1 saat geçtiyse
+    
     if (now - lastSearchTimeRef.current > oneHour) {
       lastSearchTimeRef.current = now;
       return true;
@@ -70,14 +67,12 @@ const Home = () => {
     return false;
   };
 
-  // Tüm API verilerini bir kez getir ve bellekte sakla, yeni aramalarda kullan
   useEffect(() => {
     if (isSearching && searchTerm.length > 2 && shouldFetchSearch() && allCachedExercisesRef.current.length === 0) {
-      // Tüm egzersizleri tek bir istek ile getir
+     
       fetchAllExercises().then(data => {
         allCachedExercisesRef.current = data;
         
-        // Mevcut arama sonuçlarını bellekteki veriler arasından filtrele
         interface ExerciseFilterPredicate {
           (exercise: Exercise): boolean;
         }
@@ -87,7 +82,7 @@ const Home = () => {
 
         const filteredResults: Exercise[] = data.filter(filterPredicate);
         
-        // Filtrelenmiş sonuçları React Query önbelleğine kaydet
+       
         queryClient.setQueryData(['exercises', 'search', searchTerm], filteredResults);
       });
     }
@@ -99,7 +94,7 @@ const Home = () => {
     queryKey,
     queryFn: () => {
       if (isSearching) {
-        // Önce bellekteki tüm veriler arasında ara
+       
         if (allCachedExercisesRef.current.length > 0) {
           const filteredResults = allCachedExercisesRef.current.filter(exercise =>
             exercise.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -107,7 +102,7 @@ const Home = () => {
           return Promise.resolve(filteredResults);
         }
         
-        // Eğer önbellekte hiç veri yoksa ve 1 saat geçmişse, API'den getir
+       
         if (shouldFetchSearch()) {
           return fetchAllExercises().then(data => {
             // Sonuçları kaydet
@@ -127,19 +122,19 @@ const Home = () => {
           });
         }
         
-        // Eğer yukarıdaki koşullar sağlanmazsa boş dizi döndür
+       
         return Promise.resolve([]);
       } else {
-        // Vücut bölümü filtrelemesi için normal istek
+        
         return fetchExercisesByBodyPart(selectedPart);
       }
     },
     enabled: isSearching ? searchTerm.length > 2 : true,
-    staleTime: 60 * 60 * 1000, // 1 saat (milisaniye cinsinden)
-    gcTime: 60 * 60 * 1000, // 1 saat (milisaniye cinsinden)
-    refetchOnMount: false, // Bileşen mount edildiğinde otomatik yeniden istek yapma
-    refetchOnWindowFocus: false, // Pencere odağı değiştiğinde otomatik yeniden istek yapma
-    refetchOnReconnect: false, // Yeniden bağlandığında otomatik yeniden istek yapma
+    staleTime: 60 * 60 * 1000, 
+    gcTime: 60 * 60 * 1000, 
+    refetchOnMount: false, 
+    refetchOnWindowFocus: false, 
+    refetchOnReconnect: false, 
   });
 
   const handleSearch = (term: string) => {
@@ -160,7 +155,7 @@ const Home = () => {
     updateUrlParams(part, null);
   };
 
-  // Filtreleme artık sadece lokal arama yapılıyorsa kullanılacak
+
   const filtered = !isSearching && exercises 
     ? exercises.filter((exercise: Exercise) => 
         exercise.name.toLowerCase().includes(searchTerm.toLowerCase()))

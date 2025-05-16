@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import type { Exercise } from '../types/exercise';
 
 export const useFavorites = () => {
-  // String listesi yerine Exercise listesi saklayacağız
+
   const [favorites, setFavorites] = useState<Exercise[]>([]);
 
-  // Sayfa yüklendiğinde localStorage'dan favori egzersizleri çek
+  
   useEffect(() => {
     const storedFavorites = localStorage.getItem('favorites');
     if (storedFavorites) {
@@ -18,18 +18,18 @@ export const useFavorites = () => {
     }
   }, []);
 
-  // Favorilere egzersiz ekle/çıkar
+  
   const toggleFavorite = (exercise: Exercise) => {
     setFavorites(prevFavorites => {
-      // Egzersizin zaten favorilerde olup olmadığını kontrol et
+      
       const isExistingFavorite = prevFavorites.some(fav => fav.id === exercise.id);
       
       let newFavorites;
       if (isExistingFavorite) {
-        // Eğer zaten favorilerdeyse çıkar
+        
         newFavorites = prevFavorites.filter(fav => fav.id !== exercise.id);
       } else {
-        // Değilse ekle
+        
         newFavorites = [...prevFavorites, exercise];
       }
       
