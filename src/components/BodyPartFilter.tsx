@@ -3,9 +3,10 @@ import { useBodyParts } from '../hooks/useBodyParts';
 interface Props {
   onSelect: (part: string) => void;
   selectedPart?: string;
+  disabled?: boolean;
 }
 
-const BodyPartFilter = ({ onSelect, selectedPart }: Props) => {
+const BodyPartFilter = ({ onSelect, selectedPart, disabled = false }: Props) => {
   const { data, isLoading, error } = useBodyParts();
 
   if (isLoading) return (
@@ -35,7 +36,7 @@ const BodyPartFilter = ({ onSelect, selectedPart }: Props) => {
   );
 
   return (
-    <div className="my-8">
+    <div className={`my-8 ${disabled ? 'opacity-50 pointer-events-none' : ''}`}>
       <h2 className="mb-4 text-lg font-semibold text-gray-800">Kas Grupları</h2>
       <div className="flex flex-wrap gap-2.5">
         {data?.map((part) => (

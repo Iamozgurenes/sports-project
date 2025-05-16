@@ -1,39 +1,13 @@
 import { useFavorites } from '../hooks/useFavorites';
-import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import type { Exercise } from '../types/exercise';
 import SkeletonLoader from '../components/SkeletonLoader';
-
-const API_HEADERS = {
-  'X-RapidAPI-Key': '96aacc3f77msh31524feef2483edp1b4320jsnf1c51623af03',
-  'X-RapidAPI-Host': 'exercisedb.p.rapidapi.com',
-};
-
-const fetchAllExercises = async (): Promise<Exercise[]> => {
-  const res = await axios.get('https://exercisedb.p.rapidapi.com/exercises?limit=1000', {
-    headers: API_HEADERS,
-  });
-
-  return res.data.map((ex: Exercise) => ({
-    ...ex,
-    id: ex.id?.toString?.() ?? '',
-  }));
-};
 
 const Favorites = () => {
   const { favorites, toggleFavorite } = useFavorites();
   const navigate = useNavigate();
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['allExercises'],
-    queryFn: fetchAllExercises,
-  });
+  const isLoading = false;
+  const error = null;
   
-  const favExercises = data?.filter((ex) =>
-    ex.id && favorites.includes(ex.id.toString())
-  );
-
   return (
     <div className="max-w-7xl px-4 sm:px-6 py-8 mx-auto">
       <div className="pb-10 ">
@@ -63,9 +37,9 @@ const Favorites = () => {
             Yeniden Dene
           </button>
         </div>
-      ) : favExercises && favExercises.length > 0 ? (
+      ) : favorites && favorites.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {favExercises.map((ex) => (
+          {favorites.map((ex) => (
             <div 
               key={ex.id} 
               onClick={() => navigate(`/exercise/${ex.id}`)}
@@ -82,7 +56,7 @@ const Favorites = () => {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    toggleFavorite(ex.id);
+                    toggleFavorite(ex); 
                   }}
                   className="absolute z-20 p-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-lg top-4 right-4 
                     transition-all duration-300 hover:bg-white group-hover:scale-110"

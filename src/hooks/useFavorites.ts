@@ -1,26 +1,52 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
+import type { Exercise } from '../types/exercise';
 
 export const useFavorites = () => {
-  const [favorites, setFavorites] = useState<string[]>([]);
-  const [version, setVersion] = useState(0); // Değişiklik için tetikleyici
+  // String listesi yerine Exercise listesi saklayacağız
+  const [favorites, setFavorites] = useState<Exercise[]>([]);
 
+  // Sayfa yüklendiğinde localStorage'dan favori egzersizleri çek
   useEffect(() => {
-    const stored = localStorage.getItem('favorites');
-    if (stored) {
-      setFavorites(JSON.parse(stored));
+    const storedFavorites = localStorage.getItem('favorites');
+    if (storedFavorites) {
+      try {
+        setFavorites(JSON.parse(storedFavorites));
+      } catch (e) {
+        console.error('Favoriler yüklenirken hata oluştu:', e);
+        setFavorites([]);
+      }
     }
-  }, [version]); // her değişiklikte yeniden okur
+  }, []);
 
-  const toggleFavorite = (id: string) => {
-    const updated = favorites.includes(id)
-      ? favorites.filter((fav) => fav !== id)
-      : [...favorites, id];
-
-    localStorage.setItem('favorites', JSON.stringify(updated));
-    setVersion((v) => v + 1); // versiyonu artır, hook tetiklensin
+  // Favorilere egzersiz ekle/çıkar
+  const toggleFavorite = (exercise: Exercise) => {
+    setFavorites(prevFavorites => {
+      // Egzersizin zaten favorilerde olup olmadığını kontrol et
+      const isExistingFavorite = prevFavorites.some(fav => fav.id === exercise.id);
+      
+      let newFavorites;
+      if (isExistingFavorite) {
+        // Eğer zaten favorilerdeyse çıkar
+        newFavorites = prevFavorites.filter(fav => fav.id !== exercise.id);
+      } else {
+        // Değilse ekle
+        newFavorites = [...prevFavorites, exercise];
+      }
+      
+      // Yeni favori listesini localStorage'a kaydet
+      localStorage.setItem('favorites', JSON.stringify(newFavorites));
+      return newFavorites;
+    });
   };
 
-  const isFavorite = (id: string) => favorites.includes(id);
+  // Bir egzersizin favorilerde olup olmadığını kontrol et
+  const isFavorite = (id: string): boolean => {
+    return favorites.some(fav => fav.id === id);
+  };
 
-  return { favorites, toggleFavorite, isFavorite };
+  return {
+    favorites,
+    toggleFavorite,
+    isFavorite
+  };
 };

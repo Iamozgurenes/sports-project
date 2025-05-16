@@ -82,11 +82,11 @@ const ExerciseDetail = () => {
             <div className="flex items-start justify-between mb-6">
               <h1 className="text-3xl font-bold text-gray-800 leading-tight md:text-4xl">{data.name}</h1>
               <button
-                onClick={() => toggleFavorite(id!)}
+                onClick={() => toggleFavorite(data)} // ID yerine tüm egzersiz nesnesini gönder
                 className="p-3 text-2xl transition-transform bg-gray-100 rounded-full hover:bg-gray-200 hover:scale-110"
-                aria-label={isFavorite(id!) ? "Favorilerden çıkar" : "Favorilere ekle"}
+                aria-label={isFavorite(data.id) ? "Favorilerden çıkar" : "Favorilere ekle"}
               >
-                {isFavorite(id!) ? '❤️' : '🤍'}
+                {isFavorite(data.id) ? '❤️' : '🤍'}
               </button>
             </div>
             
@@ -146,14 +146,14 @@ const ExerciseDetail = () => {
                   <span className="text-green-600 font-medium">Orta</span>
                 </div>
                 <button 
-                  onClick={() => toggleFavorite(id!)}
+                  onClick={() => toggleFavorite(data)} // ID yerine tüm egzersiz nesnesini gönder
                   className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    isFavorite(id!) 
+                    isFavorite(data.id) 
                       ? 'bg-red-100 text-red-700 hover:bg-red-200' 
                       : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
                   }`}
                 >
-                  {isFavorite(id!) ? 'Favorilerden Çıkar' : 'Favorilere Ekle'}
+                  {isFavorite(data.id) ? 'Favorilerden Çıkar' : 'Favorilere Ekle'}
                 </button>
               </div>
             </div>

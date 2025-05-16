@@ -16,9 +16,16 @@ export const fetchBodyParts = async (): Promise<string[]> => {
 
 export const fetchExercisesByBodyPart = async (bodyPart: string) => {
     const response = await axios.get(
-      `https://exercisedb.p.rapidapi.com/exercises/bodyPart/${bodyPart}`,
+      `https://exercisedb.p.rapidapi.com/exercises/bodyPart/${bodyPart}?limit=1000`,
       { headers: API_HEADERS }
     );
     return response.data;
   };
-  
+
+export const fetchAllExercises = async () => {
+  const response = await axios.get(
+    `${API_BASE_URL}/exercises?limit=2000&offset=0`,
+    { headers: API_HEADERS }
+  );
+  return response.data;
+};

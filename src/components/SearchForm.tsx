@@ -1,48 +1,53 @@
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
+import { useState, useEffect } from 'react';
 
-interface Props {
+interface SearchFormProps {
   onSearch: (term: string) => void;
+  initialValue?: string;
 }
 
-const SearchForm = ({ onSearch }: Props) => {
-  const formik = useFormik({
-    initialValues: { query: '' },
-    validationSchema: Yup.object({
-      query: Yup.string().min(2, 'En az 2 karakter').required('Zorunlu alan'),
-    }),
-    onSubmit: (values) => {
-      onSearch(values.query.toLowerCase());
-    },
-  });
+const SearchForm = ({ onSearch, initialValue = '' }: SearchFormProps) => {
+  const [searchTerm, setSearchTerm] = useState(initialValue);
+
+  // initialValue değiştiğinde state'i güncelle
+  useEffect(() => {
+    setSearchTerm(initialValue);
+  }, [initialValue]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSearch(searchTerm);
+  };
 
   return (
-    <form onSubmit={formik.handleSubmit} className="relative my-8">
-      <div className="flex items-center group overflow-hidden rounded-xl bg-white shadow-md ring-1 ring-gray-200 focus-within:ring-2 focus-within:ring-blue-400 transition-all duration-300">
-        <div className="pl-4 text-gray-400">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-          </svg>
-        </div>
-        <input
-          type="text"
-          name="query"
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          value={formik.values.query}
-          placeholder="Egzersiz ara..."
-          className="w-full py-3.5 px-3 bg-transparent border-none focus:outline-none placeholder-gray-400 text-gray-700"
-        />
-        <button
-          type="submit"
-          className="px-6 py-3.5 font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-300"
+    <form onSubmit={handleSubmit} className="w-full relative mb-6">
+      <input
+        type="text"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        placeholder="Egzersiz ara..."
+        className="w-full px-5 py-3 pl-12 text-base bg-white border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+      />
+      <button
+        type="submit"
+        className="absolute inset-y-0 right-0 px-4 text-white bg-blue-600 rounded-r-xl hover:bg-blue-700 focus:outline-none transition-colors"
+      >
+        Ara
+      </button>
+      <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+        <svg
+          className="w-5 h-5 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
         >
-          Ara
-        </button>
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          ></path>
+        </svg>
       </div>
-      {formik.touched.query && formik.errors.query && (
-        <div className="absolute mt-1 text-sm font-medium text-red-500">{formik.errors.query}</div>
-      )}
     </form>
   );
 };

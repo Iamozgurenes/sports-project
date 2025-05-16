@@ -1,27 +1,170 @@
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect, useRef } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import BodyPartFilter from '../components/BodyPartFilter';
 import SearchForm from '../components/SearchForm';
-import { fetchExercisesByBodyPart } from '../api/exerciseApi';
+import { fetchExercisesByBodyPart, fetchAllExercises } from '../api/exerciseApi';
 import { useFavorites } from '../hooks/useFavorites';
-import { useNavigate } from 'react-router-dom';
 import type { Exercise } from '../types/exercise';
 import SkeletonLoader from '../components/SkeletonLoader';
 
 const Home = () => {
-  const [selectedPart, setSelectedPart] = useState<string>('back');
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const { toggleFavorite, isFavorite } = useFavorites();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // URL'den parametre değerlerini al veya varsayılan değerleri kullan
+  const initialPart = searchParams.get('bodyPart') || 'back';
+  const initialSearchTerm = searchParams.get('search') || '';
+  
+  const [selectedPart, setSelectedPart] = useState<string>(initialPart);
+  const [searchTerm, setSearchTerm] = useState<string>(initialSearchTerm);
+  const [isSearching, setIsSearching] = useState<boolean>(initialSearchTerm.length > 2);
+  
+  const { toggleFavorite, isFavorite } = useFavorites();
+  const queryClient = useQueryClient();
+  const lastSearchTimeRef = useRef<number>(0);
+  const allCachedExercisesRef = useRef<Exercise[]>([]);
+
+  // URL parametrelerini güncelleyen yardımcı fonksiyon
+  const updateUrlParams = (part: string | null, search: string | null) => {
+    const params = new URLSearchParams();
+    
+    if (part) {
+      params.set('bodyPart', part);
+    }
+    
+    if (search && search.length > 2) {
+      params.set('search', search);
+    }
+    
+    setSearchParams(params);
+  };
+
+  // URL değişikliklerini izle ve gerekirse state'i güncelle
+  useEffect(() => {
+    const bodyPart = searchParams.get('bodyPart');
+    const search = searchParams.get('search');
+    
+    if (bodyPart && bodyPart !== selectedPart) {
+      setSelectedPart(bodyPart);
+    }
+    
+    if (search !== searchTerm) {
+      setSearchTerm(search || '');
+      setIsSearching(search !== null && search.length > 2);
+    }
+  }, [location.search, searchParams, searchTerm, selectedPart]);
+
+  // Son bir saat içinde herhangi bir arama yapıldı mı kontrolü
+  const shouldFetchSearch = (): boolean => {
+    const now = Date.now();
+    const oneHour = 60 * 60 * 1000; // 1 saat (ms)
+    
+    // Eğer son aramadan bu yana 1 saat geçtiyse
+    if (now - lastSearchTimeRef.current > oneHour) {
+      lastSearchTimeRef.current = now;
+      return true;
+    }
+    
+    return false;
+  };
+
+  // Tüm API verilerini bir kez getir ve bellekte sakla, yeni aramalarda kullan
+  useEffect(() => {
+    if (isSearching && searchTerm.length > 2 && shouldFetchSearch() && allCachedExercisesRef.current.length === 0) {
+      // Tüm egzersizleri tek bir istek ile getir
+      fetchAllExercises().then(data => {
+        allCachedExercisesRef.current = data;
+        
+        // Mevcut arama sonuçlarını bellekteki veriler arasından filtrele
+        interface ExerciseFilterPredicate {
+          (exercise: Exercise): boolean;
+        }
+
+        const filterPredicate: ExerciseFilterPredicate = (exercise: Exercise): boolean =>
+          exercise.name.toLowerCase().includes(searchTerm.toLowerCase());
+
+        const filteredResults: Exercise[] = data.filter(filterPredicate);
+        
+        // Filtrelenmiş sonuçları React Query önbelleğine kaydet
+        queryClient.setQueryData(['exercises', 'search', searchTerm], filteredResults);
+      });
+    }
+  }, [isSearching, searchTerm, queryClient]);
+
+  const queryKey = isSearching ? ['exercises', 'search', searchTerm] : ['exercises', selectedPart];
 
   const { data: exercises, isLoading, error } = useQuery<Exercise[]>({
-    queryKey: ['exercises', selectedPart],
-    queryFn: () => fetchExercisesByBodyPart(selectedPart),
+    queryKey,
+    queryFn: () => {
+      if (isSearching) {
+        // Önce bellekteki tüm veriler arasında ara
+        if (allCachedExercisesRef.current.length > 0) {
+          const filteredResults = allCachedExercisesRef.current.filter(exercise =>
+            exercise.name.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+          return Promise.resolve(filteredResults);
+        }
+        
+        // Eğer önbellekte hiç veri yoksa ve 1 saat geçmişse, API'den getir
+        if (shouldFetchSearch()) {
+          return fetchAllExercises().then(data => {
+            // Sonuçları kaydet
+            allCachedExercisesRef.current = data;
+            
+            // Sonuçları filtrele
+            interface ExerciseFilterPredicate {
+              (exercise: Exercise): boolean;
+            }
+
+            const filterPredicate: ExerciseFilterPredicate = (exercise: Exercise): boolean =>
+              exercise.name.toLowerCase().includes(searchTerm.toLowerCase());
+
+            const filteredResults: Exercise[] = data.filter(filterPredicate);
+            
+            return filteredResults;
+          });
+        }
+        
+        // Eğer yukarıdaki koşullar sağlanmazsa boş dizi döndür
+        return Promise.resolve([]);
+      } else {
+        // Vücut bölümü filtrelemesi için normal istek
+        return fetchExercisesByBodyPart(selectedPart);
+      }
+    },
+    enabled: isSearching ? searchTerm.length > 2 : true,
+    staleTime: 60 * 60 * 1000, // 1 saat (milisaniye cinsinden)
+    gcTime: 60 * 60 * 1000, // 1 saat (milisaniye cinsinden)
+    refetchOnMount: false, // Bileşen mount edildiğinde otomatik yeniden istek yapma
+    refetchOnWindowFocus: false, // Pencere odağı değiştiğinde otomatik yeniden istek yapma
+    refetchOnReconnect: false, // Yeniden bağlandığında otomatik yeniden istek yapma
   });
 
-  const filtered = exercises?.filter((exercise: Exercise) =>
-    exercise.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    setIsSearching(term.length > 2);
+    updateUrlParams(selectedPart, term.length > 2 ? term : null);
+  };
+
+  const resetSearch = () => {
+    setSearchTerm('');
+    setIsSearching(false);
+    updateUrlParams(selectedPart, null);
+  };
+
+  const handleBodyPartSelect = (part: string) => {
+    setSelectedPart(part);
+    resetSearch();
+    updateUrlParams(part, null);
+  };
+
+  // Filtreleme artık sadece lokal arama yapılıyorsa kullanılacak
+  const filtered = !isSearching && exercises 
+    ? exercises.filter((exercise: Exercise) => 
+        exercise.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    : exercises;
 
   return (
     <div className="max-w-7xl px-4 sm:px-6 py-8 mx-auto">
@@ -34,26 +177,26 @@ const Home = () => {
         </p>
       </div>
 
-      <SearchForm onSearch={setSearchTerm} />
+      <SearchForm onSearch={handleSearch} initialValue={searchTerm} />
       <BodyPartFilter 
-        onSelect={(part) => {
-          setSelectedPart(part);
-          setSearchTerm('');
-        }}
+        onSelect={handleBodyPartSelect}
         selectedPart={selectedPart} 
+        disabled={isSearching}
       />
 
       <div className="flex items-center gap-3 mt-10 mb-8">
         <h2 className="text-2xl font-bold text-gray-800">Egzersizler</h2>
-        <span className="px-4 py-1 text-sm font-semibold text-blue-700 bg-blue-100 rounded-full">
-          {selectedPart}
-        </span>
+        {!isSearching && (
+          <span className="px-4 py-1 text-sm font-semibold text-blue-700 bg-blue-100 rounded-full">
+            {selectedPart}
+          </span>
+        )}
         {searchTerm && (
           <span className="px-4 py-1 text-sm font-semibold text-gray-700 bg-gray-100 rounded-full flex items-center">
             "{searchTerm}"
             <button
               className="ml-2 text-gray-500 hover:text-gray-700"
-              onClick={() => setSearchTerm('')}
+              onClick={resetSearch}
             >
               ✕
             </button>
@@ -105,7 +248,7 @@ const Home = () => {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  toggleFavorite(exercise.id);
+                  toggleFavorite(exercise); // Artık egzersizin sadece ID'sini değil tüm bilgilerini geçiyoruz
                 }}
                 className="absolute z-20 p-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-lg top-4 right-4 transition-all duration-300 
                   hover:bg-white group-hover:scale-110"
