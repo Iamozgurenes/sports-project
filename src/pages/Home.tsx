@@ -67,65 +67,102 @@ const Home = () => {
     return false;
   };
 
-  useEffect(() => {
-    if (isSearching && searchTerm.length > 2 && shouldFetchSearch() && allCachedExercisesRef.current.length === 0) {
-     
-      fetchAllExercises().then(data => {
-        allCachedExercisesRef.current = data;
-        
-        interface ExerciseFilterPredicate {
-          (exercise: Exercise): boolean;
-        }
-
-        const filterPredicate: ExerciseFilterPredicate = (exercise: Exercise): boolean =>
-          exercise.name.toLowerCase().includes(searchTerm.toLowerCase());
-
-        const filteredResults: Exercise[] = data.filter(filterPredicate);
-        
-       
-        queryClient.setQueryData(['exercises', 'search', searchTerm], filteredResults);
-      });
+  const fetchAndCacheAllExercises = async (): Promise<Exercise[]> => {
+    if (shouldFetchSearch() || allCachedExercisesRef.current.length === 0) {
+      const data = await fetchAllExercises();
+      allCachedExercisesRef.current = data;
+      
+      queryClient.setQueryData(['exercises', 'all'], data);
+      
+      return data;
     }
-  }, [isSearching, searchTerm, queryClient]);
+    
+    return allCachedExercisesRef.current;
+  };
 
-  const queryKey = isSearching ? ['exercises', 'search', searchTerm] : ['exercises', selectedPart];
+  // Arama sonuçlarını kategori ve arama terimine göre filtreleme
+  const filterExercises = (exercises: Exercise[], searchTerm: string): Exercise[] => {
+    return exercises.filter((exercise: Exercise): boolean =>
+      exercise.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      exercise.target.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      exercise.equipment.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  };
+
+  useEffect(() => {
+    if (isSearching && searchTerm.length > 2) {
+      // 'all' kategorisindeyse tüm egzersizlerde ara
+      if (selectedPart === 'all') {
+        fetchAndCacheAllExercises().then((data: Exercise[]) => {
+          const filteredResults: Exercise[] = filterExercises(data, searchTerm);
+          queryClient.setQueryData(['exercises', 'search', selectedPart, searchTerm], filteredResults);
+        });
+      } 
+      // Seçili kategori içinde ara
+      else {
+        // Önce yerel bellekte var mı diye kontrol et
+        if (allCachedExercisesRef.current.length > 0) {
+          // Önce sadece seçili kategoriye ait egzersizleri filtrele
+          const categoryExercises = allCachedExercisesRef.current.filter(
+            (exercise: Exercise) => exercise.bodyPart.toLowerCase() === selectedPart.toLowerCase()
+          );
+          // Sonra arama terimine göre filtrele
+          const filteredResults = filterExercises(categoryExercises, searchTerm);
+          queryClient.setQueryData(['exercises', 'search', selectedPart, searchTerm], filteredResults);
+        } 
+        // Önbellekte veri yoksa önce categori egzersizlerini getir
+        else {
+          fetchExercisesByBodyPart(selectedPart).then((data: Exercise[]) => {
+            const filteredResults = filterExercises(data, searchTerm);
+            queryClient.setQueryData(['exercises', 'search', selectedPart, searchTerm], filteredResults);
+          });
+        }
+      }
+    }
+  }, [isSearching, searchTerm, selectedPart, queryClient]);
+
+  // Query anahtarına kategori bilgisini de ekle
+  const queryKey = isSearching 
+    ? ['exercises', 'search', selectedPart, searchTerm] 
+    : ['exercises', selectedPart];
 
   const { data: exercises, isLoading, error } = useQuery<Exercise[]>({
     queryKey,
-    queryFn: () => {
+    queryFn: async () => {
       if (isSearching) {
-       
-        if (allCachedExercisesRef.current.length > 0) {
-          const filteredResults = allCachedExercisesRef.current.filter(exercise =>
-            exercise.name.toLowerCase().includes(searchTerm.toLowerCase())
-          );
-          return Promise.resolve(filteredResults);
+        // 'all' kategorisindeyse tüm egzersizlerde ara
+        if (selectedPart === 'all') {
+          if (allCachedExercisesRef.current.length > 0) {
+            return filterExercises(allCachedExercisesRef.current, searchTerm);
+          }
+          
+          const data: Exercise[] = await fetchAndCacheAllExercises();
+          return filterExercises(data, searchTerm);
+        } 
+        // Seçili kategori içinde ara
+        else {
+          // Önbellekte tüm veriler varsa kullan
+          if (allCachedExercisesRef.current.length > 0) {
+            // Önce sadece seçili kategoriye ait egzersizleri filtrele
+            const categoryExercises = allCachedExercisesRef.current.filter(
+              (exercise: Exercise) => exercise.bodyPart.toLowerCase() === selectedPart.toLowerCase()
+            );
+            // Sonra arama terimine göre filtrele
+            return filterExercises(categoryExercises, searchTerm);
+          }
+          
+          // Kategori verilerini getir ve arama yap
+          const categoryData = await fetchExercisesByBodyPart(selectedPart);
+          return filterExercises(categoryData, searchTerm);
+        }
+      } else if (selectedPart === 'all') {
+        const cachedData = queryClient.getQueryData<Exercise[]>(['exercises', 'all']);
+        if (cachedData) {
+          return cachedData;
         }
         
-       
-        if (shouldFetchSearch()) {
-          return fetchAllExercises().then(data => {
-            // Sonuçları kaydet
-            allCachedExercisesRef.current = data;
-            
-            // Sonuçları filtrele
-            interface ExerciseFilterPredicate {
-              (exercise: Exercise): boolean;
-            }
-
-            const filterPredicate: ExerciseFilterPredicate = (exercise: Exercise): boolean =>
-              exercise.name.toLowerCase().includes(searchTerm.toLowerCase());
-
-            const filteredResults: Exercise[] = data.filter(filterPredicate);
-            
-            return filteredResults;
-          });
-        }
-        
-       
-        return Promise.resolve([]);
+        return fetchAndCacheAllExercises();
       } else {
-        
         return fetchExercisesByBodyPart(selectedPart);
       }
     },
@@ -155,11 +192,7 @@ const Home = () => {
     updateUrlParams(part, null);
   };
 
-
-  const filtered = !isSearching && exercises 
-    ? exercises.filter((exercise: Exercise) => 
-        exercise.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    : exercises;
+  const filtered = exercises;
 
   return (
     <div className="max-w-7xl px-4 sm:px-6 py-8 mx-auto">
