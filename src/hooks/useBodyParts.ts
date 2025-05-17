@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchBodyParts } from '../api/exerciseApi';
+import { getBodyPartList } from '../api/exerciseApi';
 
-export const useBodyParts = () => {
+export const useBodyPartList = () => {
   return useQuery({
-    queryKey: ['bodyParts'],
-    queryFn: fetchBodyParts
+    queryKey: ['bodyPartList'],
+    queryFn: getBodyPartList,
+    staleTime: 1000 * 60 * 10,
   });
 };

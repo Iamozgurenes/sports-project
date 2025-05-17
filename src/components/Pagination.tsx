@@ -1,58 +1,42 @@
-import React from 'react';
+import LoaderComp from "./Loader";
 
-interface PaginationProps {
+type PaginationProps = {
   currentPage: number;
-  totalPages: number;
-  handlePrevPage: () => void;
-  handleNextPage: () => void;
- 
-}
+  onPageChange: (page: number) => void;
+  isLastPage: boolean;
+  isLoading?: boolean;
+};
 
-const Pagination: React.FC<PaginationProps> = ({
-  currentPage,
-  totalPages,
-  handlePrevPage,
-  handleNextPage,
- 
-}) => {
-  if (totalPages <= 1) return null;
-  
+const Pagination = ({ currentPage, onPageChange, isLastPage, isLoading }: PaginationProps) => {
   return (
-    <div className="flex justify-center items-center space-x-4 mt-12 mb-8">
+    <div className="flex justify-center items-center mt-8 gap-5">
       <button
-        onClick={handlePrevPage}
+        onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
         disabled={currentPage === 1}
-        className={`px-4 py-2 rounded-lg border text-sm flex items-center gap-2 transition-colors ${
-          currentPage === 1 
-            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-            : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-200'
-        }`}
+        className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-40 disabled:bg-gray-400 transition-all duration-300 ease-in-out shadow-md hover:shadow-lg flex items-center gap-1"
       >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
         Önceki
       </button>
-      
-      <div className="text-sm font-medium text-gray-700">
-        Sayfa {currentPage} / {totalPages} 
-        {/* {totalItems !== undefined && <span className="ml-1 text-gray-500">({totalItems} sonuç)</span>} */}
-      </div>
-      
+
+      <span className="bg-gray-100 px-4 py-2 rounded-full text-indigo-800 font-medium shadow-sm">
+        Sayfa: {currentPage}
+      </span>
+
       <button
-        onClick={handleNextPage}
-        disabled={currentPage === totalPages}
-        className={`px-4 py-2 rounded-lg border text-sm flex items-center gap-2 transition-colors ${
-          currentPage === totalPages 
-            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-            : 'bg-white text-gray-700 hover:bg-gray-50 border-gray-200'
-        }`}
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={isLastPage}
+        className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-40 disabled:bg-gray-400 transition-all duration-300 ease-in-out shadow-md hover:shadow-lg flex items-center gap-1"
       >
         Sonraki
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
       </button>
+
+      {isLoading && <span className="text-sm ml-2"><LoaderComp/></span>}
     </div>
   );
 };
