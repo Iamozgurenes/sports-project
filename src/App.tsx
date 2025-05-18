@@ -9,6 +9,7 @@ import Navbar from './components/Navbar';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import NotFound from './pages/NotFound';
 import Footer from './components/Footer';
+import { ScrollToTop } from './components/ScrollToTop';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,6 +25,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ErrorBoundary>
         <Router>
+          <ScrollToTop />
           <Navbar /> 
           <Routes>
             <Route path="/" element={<Home />} />
@@ -34,7 +36,6 @@ function App() {
           <Footer/>
         </Router>
       </ErrorBoundary>
-      
     </QueryClientProvider>
   );
 }

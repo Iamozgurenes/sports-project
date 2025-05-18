@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import LoaderComp from "./Loader";
+import { scrollToTop } from "../utils/scrollUtils";
 
 type PaginationProps = {
   currentPage: number;
@@ -8,6 +10,11 @@ type PaginationProps = {
 };
 
 const Pagination = ({ currentPage, onPageChange, isLastPage, isLoading }: PaginationProps) => {
+
+  useEffect(() => {
+    scrollToTop();
+  }, [currentPage]);
+
   return (
     <div className="flex justify-center items-center mt-8 gap-5">
       <button
