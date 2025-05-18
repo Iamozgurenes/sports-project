@@ -3,14 +3,18 @@ import { useExerciseDetail } from "../hooks/useExerciseDetail";
 import ErrorComp from "../components/Error";
 import { useFavorites } from "../hooks/useFavorites";
 import LoaderComp from "../components/Loader";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const ExerciseDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { data, isLoading, error } = useExerciseDetail(id);
   const { toggleFavorite, isFavorite } = useFavorites();
+  
+  // Dinamik başlık
+  useDocumentTitle(data ? `${data.name} | Egzersiz Rehberi` : 'Egzersiz Detayı');
 
-  if (isLoading) return <LoaderComp />;
+  if (isLoading) return <LoaderComp text="Egzersiz bilgileri yükleniyor..." />;
   if (error || !data) return <ErrorComp />;
 
   return (

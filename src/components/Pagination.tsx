@@ -22,7 +22,7 @@ const Pagination = ({ currentPage, onPageChange, isLastPage, isLoading }: Pagina
       </button>
 
       <span className="bg-gray-100 px-4 py-2 rounded-full text-indigo-800 font-medium shadow-sm">
-        Sayfa: {currentPage}
+        Sayfa / {currentPage}
       </span>
 
       <button

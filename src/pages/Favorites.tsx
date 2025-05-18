@@ -1,8 +1,11 @@
 import { useFavorites } from '../hooks/useFavorites';
 import { useNavigate } from 'react-router-dom';
 import SkeletonLoader from '../components/SkeletonLoader';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 const Favorites = () => {
+  useDocumentTitle('Favorilerim | Egzersiz Rehberi');
+  
   const { favorites, toggleFavorite } = useFavorites();
   const navigate = useNavigate();
   const isLoading = false;

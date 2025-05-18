@@ -6,8 +6,11 @@ import HomeCard from '../components/Card';
 import SearchBar from '../components/SearchBar';
 import { useExerciseSearch } from '../hooks/useExerciseSearch';
 import SkeletonLoader from '../components/SkeletonLoader';
+import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 const Home = () => {
+  useDocumentTitle('Egzersiz Rehberi | Ana Sayfa');
+  
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get("category") || "tumu";
   const selectedBodyPart = categoryParam === "tumu" ? "tumu" : categoryParam;
@@ -45,26 +48,16 @@ const Home = () => {
         )}
       </div>
 
-      {showSearchResults ? (
-        searchLoading ? (
-          <SkeletonLoader />
-        ) : (
-          <HomeCard bodyPart="" key={searchTerm} dataOverride={searchResults} />
-        )
+      {searchTerm.length > 0 && searchLoading ? (
+        <SkeletonLoader />
       ) : (
         <HomeCard 
-          bodyPart={selectedBodyPart} 
-          key={selectedBodyPart} // key değiştiği için yeniden render olacak
+          bodyPart={searchTerm.length > 0 ? "" : selectedBodyPart}
+          key={searchTerm.length > 0 ? searchTerm : selectedBodyPart}
+          dataOverride={searchTerm.length > 0 ? searchResults : undefined}
         />
       )}
 
-      <footer className="mt-16 py-8 border-t border-gray-200">
-        <div className="text-center">
-          <p className="text-gray-600 text-sm font-medium">
-            Bu proje Özgür Enes Osanmaz tarafından yapılmıştır
-          </p>
-        </div>
-      </footer>
     </div>
   );
 };
