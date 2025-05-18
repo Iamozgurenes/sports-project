@@ -22,7 +22,7 @@ export const useExerciseSearch = (searchTerm: string) => {
     enabled: searchTerm.length > 0,
   });
 
-  // Client-side filtreleme
+
   const filteredResults = useMemo(() => {
     if (!searchTerm || !allExercises) return [];
     

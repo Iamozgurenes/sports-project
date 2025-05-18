@@ -5,7 +5,7 @@ export const useExercisesByBodyPart = (
   bodyPart: string,
   page: number = 1,
   limit: number = 10,
-  enabled: boolean = true // yeni parametre
+  enabled: boolean = true
 ) => {
   const offset = (page - 1) * limit;
 

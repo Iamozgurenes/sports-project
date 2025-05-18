@@ -39,7 +39,6 @@ export const useFavorites = () => {
     });
   };
 
-  // Bir egzersizin favorilerde olup olmadığını kontrol et
   const isFavorite = (id: string): boolean => {
     return favorites.some(fav => fav.id === id);
   };

@@ -25,11 +25,10 @@ export default function BodyPartFilter({ selectedPart, onSelect }: Props) {
           <button
             key={part}
             onClick={() => onSelect(part)}
-            className={`px-5 py-2.5 text-sm font-medium rounded-full whitespace-nowrap transition-colors ${
-              isSelected
+            className={`px-5 py-2.5 text-sm font-medium rounded-full whitespace-nowrap transition-colors ${isSelected
                 ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
+              }`}
           >
             {label}
           </button>

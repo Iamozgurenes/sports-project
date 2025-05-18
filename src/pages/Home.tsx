@@ -10,7 +10,7 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 const Home = () => {
   useDocumentTitle('Egzersiz Rehberi | Ana Sayfa');
-  
+
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get("category") || "tumu";
   const selectedBodyPart = categoryParam === "tumu" ? "tumu" : categoryParam;
@@ -51,7 +51,7 @@ const Home = () => {
       {searchTerm.length > 0 && searchLoading ? (
         <SkeletonLoader />
       ) : (
-        <HomeCard 
+        <HomeCard
           bodyPart={searchTerm.length > 0 ? "" : selectedBodyPart}
           key={searchTerm.length > 0 ? searchTerm : selectedBodyPart}
           dataOverride={searchTerm.length > 0 ? searchResults : undefined}

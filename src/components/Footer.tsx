@@ -1,6 +1,6 @@
 export default function Footer() {
   const currentYear = new Date().getFullYear();
-  
+
   return (
     <footer className="bg-gradient-to-r from-gray-800 to-gray-900 text-white pt-12 pb-8 mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -15,11 +15,11 @@ export default function Footer() {
               <span className="text-xl font-bold text-white">Egzersiz Rehberi</span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed mt-2">
-              Sağlıklı yaşam ve fitness yolculuğunuzda yanınızda olan, 
+              Sağlıklı yaşam ve fitness yolculuğunuzda yanınızda olan,
               en iyi egzersiz rehberi uygulaması ile hedeflerinize ulaşın.
             </p>
           </div>
-          
+
           {/* Hızlı Erişim */}
           <div>
             <h3 className="text-lg font-semibold mb-4 text-white">Hızlı Erişim</h3>
@@ -31,7 +31,7 @@ export default function Footer() {
               <li><a href="/?category=cardio" className="text-gray-400 hover:text-blue-400 transition-colors duration-300 text-sm">Kardiyo Egzersizleri</a></li>
             </ul>
           </div>
-          
+
           {/* İletişim */}
           <div>
             <h3 className="text-lg font-semibold mb-4 text-white">İletişim</h3>
@@ -51,20 +51,20 @@ export default function Footer() {
               </li>
             </ul>
           </div>
-          
+
           {/* Bülten */}
           <div>
             <h3 className="text-lg font-semibold mb-4 text-white">Bültenimize Abone Olun</h3>
             <p className="text-sm text-gray-400 mb-3">Yeni egzersizler ve fitness ipuçları için abone olun.</p>
             <form className="flex">
-              <input 
-                type="email" 
-                placeholder="E-posta adresiniz" 
+              <input
+                type="email"
+                placeholder="E-posta adresiniz"
                 className="bg-gray-700 text-white px-4 py-2 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-full"
                 required
               />
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-r-lg transition-colors duration-300"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -74,7 +74,7 @@ export default function Footer() {
             </form>
           </div>
         </div>
-        
+
         {/* Sosyal Medya */}
         <div className="flex justify-center space-x-6 mb-8">
           <a href="#" aria-label="Facebook" className="text-gray-400 hover:text-blue-500 transition-colors duration-300">
@@ -98,7 +98,7 @@ export default function Footer() {
             </svg>
           </a>
         </div>
-        
+
         {/* Alt Kısım */}
         <div className="border-t border-gray-700 pt-6 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <p className="text-sm text-gray-400">

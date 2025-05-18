@@ -10,7 +10,7 @@ const ExerciseDetail = () => {
   const navigate = useNavigate();
   const { data, isLoading, error } = useExerciseDetail(id);
   const { toggleFavorite, isFavorite } = useFavorites();
-  
+
   // Dinamik başlık
   useDocumentTitle(data ? `${data.name} | Egzersiz Rehberi` : 'Egzersiz Detayı');
 
@@ -72,11 +72,10 @@ const ExerciseDetail = () => {
                 </div>
                 <button
                   onClick={() => toggleFavorite(data)}
-                  className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    isFavorite(data.id)
+                  className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${isFavorite(data.id)
                       ? "bg-red-100 text-red-700 hover:bg-red-200"
                       : "bg-blue-100 text-blue-700 hover:bg-blue-200"
-                  }`}
+                    }`}
                 >
                   {isFavorite(data.id) ? "Favorilerden Çıkar" : "Favorilere Ekle"}
                 </button>
@@ -89,7 +88,7 @@ const ExerciseDetail = () => {
   );
 };
 
-// İçerik kartı bileşeni
+
 const InfoCard = ({
   title,
   value,

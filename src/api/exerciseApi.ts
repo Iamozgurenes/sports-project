@@ -16,13 +16,13 @@ export const getExercisesByBodyPart = async ({
   offset?: number;
 }) => {
   let endpoint = '/exercises';
-  
+
   if (bodyPart && bodyPart !== "tumu") {
     endpoint = `/exercises/bodyPart/${bodyPart}`;
   }
 
-  
-  
+
+
   const response = await api.get(endpoint, {
     params: { limit, offset },
   });

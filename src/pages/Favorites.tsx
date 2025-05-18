@@ -5,12 +5,12 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle';
 
 const Favorites = () => {
   useDocumentTitle('Favorilerim | Egzersiz Rehberi');
-  
+
   const { favorites, toggleFavorite } = useFavorites();
   const navigate = useNavigate();
   const isLoading = false;
   const error = null;
-  
+
   return (
     <div className="max-w-7xl px-4 sm:px-6 py-8 mx-auto">
       <div className="pb-10 ">
@@ -33,7 +33,7 @@ const Favorites = () => {
           </div>
           <h3 className="text-xl font-bold text-red-800">Bir hata oluştu</h3>
           <p className="mt-2 text-red-700">Egzersiz verileri yüklenirken bir sorunla karşılaşıldı.</p>
-          <button 
+          <button
             onClick={() => window.location.reload()}
             className="mt-4 px-6 py-2.5 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors"
           >
@@ -43,23 +43,23 @@ const Favorites = () => {
       ) : favorites && favorites.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {favorites.map((ex) => (
-            <div 
-              key={ex.id} 
+            <div
+              key={ex.id}
               onClick={() => navigate(`/exercise/${ex.id}`)}
               className="overflow-hidden bg-white rounded-2xl shadow-sm border border-gray-100 transition-all duration-300 hover:shadow-xl hover:scale-[1.02] group"
             >
               <div className="relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <img 
-                  src={ex.gifUrl} 
-                  alt={ex.name} 
-                  className="w-full h-52 object-cover transition-transform duration-500 group-hover:scale-110" 
-                  loading="lazy" 
+                <img
+                  src={ex.gifUrl}
+                  alt={ex.name}
+                  className="w-full h-52 object-cover transition-transform duration-500 group-hover:scale-110"
+                  loading="lazy"
                 />
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    toggleFavorite(ex); 
+                    toggleFavorite(ex);
                   }}
                   className="absolute z-20 p-2.5 bg-white/90 backdrop-blur-sm rounded-full shadow-lg top-4 right-4 
                     transition-all duration-300 hover:bg-white group-hover:scale-110"
@@ -93,7 +93,7 @@ const Favorites = () => {
           <p className="text-gray-500 mb-8 max-w-md">
             Favori egzersizlerinizi kaydetmek için ana sayfadaki egzersizlerin sağ üst köşesindeki kalp ikonuna tıklayabilirsiniz.
           </p>
-          <button 
+          <button
             onClick={() => navigate('/')}
             className="px-8 py-3 font-medium text-white transition-all bg-gradient-to-r from-blue-600 to-indigo-600 
               rounded-lg hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/20 hover:shadow-blue-600/30"

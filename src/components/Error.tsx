@@ -11,7 +11,7 @@ export default function ErrorComp() {
                 </div>
                 <h3 className="text-xl font-bold text-red-800 mb-2">Veri yüklenirken bir hata oluştu</h3>
                 <p className="text-red-700 opacity-80 text-center max-w-xs">Lütfen daha sonra tekrar deneyin veya sistem yöneticinizle iletişime geçin.</p>
-                
+
                 <button className="mt-6 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg shadow-sm transition-all font-medium text-sm">
                     Yeniden Dene
                 </button>

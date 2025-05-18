@@ -9,7 +9,7 @@ export default function NotFoundComp() {
             </div>
             <h3 className="text-xl font-bold text-gray-800 mb-3">Sonuç bulunamadı</h3>
             <p className="text-gray-600 mb-6">Arama kriterlerinizle eşleşen egzersiz bulunamadı.</p>
-            
+
             <button
                 className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-300 transform hover:scale-105 active:scale-95"
                 onClick={() => window.history.back()}

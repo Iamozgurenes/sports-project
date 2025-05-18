@@ -6,12 +6,11 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   
-  // Sayfa değiştiğinde menüyü kapat
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location.pathname]);
 
-  // Ekran boyutu değiştiğinde menüyü kapat
+
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 768) {
@@ -79,7 +78,6 @@ const Navbar = () => {
               </div>
             </Link>
             
-            {/* Desktop Navigasyon Linkleri */}
             <div className="hidden md:flex md:items-center md:gap-4">
               <Link to="/" className={linkStyle('/')}>
                 <span className="flex items-center gap-2">
@@ -101,7 +99,7 @@ const Navbar = () => {
               </Link>
             </div>
             
-            {/* Mobil Menü Butonu */}
+            
             <div className="md:hidden">
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -126,10 +124,10 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Mobil Menü - Ayrı div olarak düzenlendi */}
+      
       </nav>
       
-      {/* Mobil menü ekranı, header dışında ama hala sticky header'ın bir parçası */}
+      
       <div 
         id="mobile-menu"
         ref={menuRef}
@@ -159,7 +157,6 @@ const Navbar = () => {
         </div>
       </div>
       
-      {/* Overlay - Mobil menü açıkken arkaplanı karartan katman */}
       {isMenuOpen && (
         <div 
           className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 md:hidden"

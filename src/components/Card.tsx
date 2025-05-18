@@ -9,7 +9,7 @@ import ErrorComp from "./Error";
 
 type ExerciseListProps = {
   bodyPart: string;
-  dataOverride?: Exercise[]; 
+  dataOverride?: Exercise[];
 };
 
 export default function HomeCard({ bodyPart, dataOverride }: ExerciseListProps) {
@@ -24,7 +24,7 @@ export default function HomeCard({ bodyPart, dataOverride }: ExerciseListProps) 
     bodyPart,
     page,
     limit,
-    !dataOverride 
+    !dataOverride
   );
 
   const isLastPage = data ? data.length < limit : false;
@@ -42,8 +42,8 @@ export default function HomeCard({ bodyPart, dataOverride }: ExerciseListProps) 
 
   if (isLoading && !dataOverride) return <SkeletonLoader />;
   if (error && !dataOverride) return <ErrorComp />;
-  
-  
+
+
   if (dataOverride && dataOverride.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-10 bg-gray-50 rounded-lg border border-gray-200 shadow-sm">
@@ -59,7 +59,7 @@ export default function HomeCard({ bodyPart, dataOverride }: ExerciseListProps) 
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {exercises?.map((exercise: Exercise) =>  (
+        {exercises?.map((exercise: Exercise) => (
           <Link
             key={exercise.id}
             to={`/exercise/${exercise.id}`}

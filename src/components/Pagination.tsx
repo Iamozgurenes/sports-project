@@ -36,7 +36,7 @@ const Pagination = ({ currentPage, onPageChange, isLastPage, isLoading }: Pagina
         </svg>
       </button>
 
-      {isLoading && <span className="text-sm ml-2"><LoaderComp/></span>}
+      {isLoading && <span className="text-sm ml-2"><LoaderComp /></span>}
     </div>
   );
 };
