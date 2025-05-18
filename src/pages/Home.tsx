@@ -5,6 +5,7 @@ import BodyPartFilter from '../components/BodyPartFilter';
 import HomeCard from '../components/Card';
 import SearchBar from '../components/SearchBar';
 import { useExerciseSearch } from '../hooks/useExerciseSearch';
+import SkeletonLoader from '../components/SkeletonLoader';
 
 const Home = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -12,9 +13,7 @@ const Home = () => {
   const selectedBodyPart = categoryParam === "tumu" ? "tumu" : categoryParam;
   const [searchTerm, setSearchTerm] = useState("");
 
-  const {
-    data: searchResults,
-  } = useExerciseSearch(searchTerm);
+  const { data: searchResults, isLoading: searchLoading } = useExerciseSearch(searchTerm);
 
   const showSearchResults = searchTerm.length > 0;
 
@@ -47,7 +46,11 @@ const Home = () => {
       </div>
 
       {showSearchResults ? (
-        <HomeCard bodyPart="" key={searchTerm} dataOverride={searchResults} />
+        searchLoading ? (
+          <SkeletonLoader />
+        ) : (
+          <HomeCard bodyPart="" key={searchTerm} dataOverride={searchResults} />
+        )
       ) : (
         <HomeCard 
           bodyPart={selectedBodyPart} 

@@ -6,9 +6,7 @@ type Props = {
 };
 
 const validationSchema = Yup.object().shape({
-  search: Yup.string()
-    .required('Arama alanı boş olamaz')
-    .min(2, 'En az 2 karakter girin'),
+  search: Yup.string().min(2, 'En az 2 karakter girin'),
 });
 
 export default function SearchBar  ({ onSearch }: Props)  {
